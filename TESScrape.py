@@ -55,6 +55,7 @@ class TESScrape:
                     sleep(0.1)
                     page_click = self.driver.find_element_by_xpath(xpath_soup(page))
                     for college in self.college_links:
+                        wait.until(EC.element_to_be_clickable((By.XPATH, xpath_soup(college))))
                         college_click = self.driver.find_element_by_xpath(xpath_soup(college))
                         college_click.click()
                         self.grabbing_class_links()
@@ -100,6 +101,7 @@ class TESScrape:
                             wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/form/div[6]/div/div/div/div/div[1]/button")))
                             close = self.driver.find_element_by_xpath("/html/body/div/form/div[6]/div/div/div/div/div[1]/button")
                             close.click()
+                        self.driver.execute_script("window.history.go(-1)")
                     page_click.click()
 
     def next_page(self):
@@ -149,6 +151,11 @@ class TESScrape:
         }
         json.dump(output, out_file, indent=6)
         out_file.close()
+
+
+
+
+
 
 
 
