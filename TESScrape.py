@@ -102,6 +102,7 @@ class TESScrape:
                             close = self.driver.find_element_by_xpath("/html/body/div/form/div[6]/div/div/div/div/div[1]/button")
                             close.click()
                         self.driver.execute_script("window.history.go(-1)")
+                    page_click = self.driver.find_element_by_xpath(xpath_soup(page))
                     page_click.click()
 
     def next_page(self):
