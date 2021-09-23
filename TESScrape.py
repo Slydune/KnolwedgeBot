@@ -36,87 +36,167 @@ class TESScrape:
         self.class_info = ''
         self.page_list = ''
 
-    def start_scrape(self):
+    ##
+    # a_letter = which letter to select, if want to scrape all "ALL" is used, keep in string format
+    # num_page = which page to select, if you want to scrape all pages use "ALL", keep in string format
+    ##
+    def start_scrape(self, a_letter, num_page):
         wait = WebDriverWait(self.driver, 30)
-        self.grabbing_college_links()
-        while True:
-            first = True
-            self.next_page()
-            for page in self.page_list:
-                if page.get_text() == "...":
-                    if first:
-                        first = False
-                    else:
+        self.grabbing_college_links(a_letter)
+        if num_page == "ALL":
+            while True:
+                first = True
+                self.next_page()
+                for page in self.page_list:
+                    if page.get_text() == "...":
+                        if first:
+                            first = False
+                        else:
+                            page_click = self.driver.find_element_by_xpath(xpath_soup(page))
+                            page_click.click()
+                            sleep(0.1)
+                            break
+                        sleep(0.1)
+                        page_click = self.driver.find_element_by_xpath(xpath_soup(page))
+                        for college in self.college_links:
+                            wait.until(EC.element_to_be_clickable((By.XPATH, xpath_soup(college))))
+                            college_click = self.driver.find_element_by_xpath(xpath_soup(college))
+                            college_click.click()
+                            self.grabbing_class_links()
+                            for course in self.class_links:
+                                wait.until(EC.element_to_be_clickable((By.XPATH, xpath_soup(course))))
+                                course_click = self.driver.find_element_by_xpath(xpath_soup(course))
+                                actions = ActionChains(self.driver)
+                                actions.move_to_element(course_click).perform()
+                                course_click.click()
+                                sleep(3)
+                                self.grabbing_class_info()
+                                try:
+                                    school1 = self.class_info[2][0].get_text()
+                                except IndexError:
+                                    school1 = ''
+
+                                try:
+                                    course1 = self.class_info[0][0].get_text()
+                                except IndexError:
+                                    course1 = ''
+
+                                try:
+                                    desc1 = self.class_info[1][0].get_text()
+                                except IndexError:
+                                    desc1 = ''
+
+                                try:
+                                    school2 = self.class_info[2][1].get_text()
+                                except IndexError:
+                                    school1 = ''
+
+                                try:
+                                    course2 = self.class_info[0][1].get_text()
+                                except IndexError:
+                                    course2 = ''
+
+                                try:
+                                    desc2 = self.class_info[1][1].get_text()
+                                except IndexError:
+                                    desc2 = ''
+                                self.json_dump(school1, school2, course1, course2, desc1, desc2)
+
+                                wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/form/div[6]/div/div/div/div/div[1]/button")))
+                                close = self.driver.find_element_by_xpath("/html/body/div/form/div[6]/div/div/div/div/div[1]/button")
+                                close.click()
+                            self.driver.execute_script("window.history.go(-1)")
                         page_click = self.driver.find_element_by_xpath(xpath_soup(page))
                         page_click.click()
-                        sleep(0.1)
-                        break
-                else:
-                    sleep(0.1)
-                    page_click = self.driver.find_element_by_xpath(xpath_soup(page))
-                    for college in self.college_links:
-                        wait.until(EC.element_to_be_clickable((By.XPATH, xpath_soup(college))))
-                        college_click = self.driver.find_element_by_xpath(xpath_soup(college))
-                        college_click.click()
-                        self.grabbing_class_links()
-                        for course in self.class_links:
-                            wait.until(EC.element_to_be_clickable((By.XPATH, xpath_soup(course))))
-                            course_click = self.driver.find_element_by_xpath(xpath_soup(course))
-                            actions = ActionChains(self.driver)
-                            actions.move_to_element(course_click).perform()
-                            course_click.click()
-                            sleep(3)
-                            self.grabbing_class_info()
-                            try:
-                                school1 = self.class_info[2][0].get_text()
-                            except IndexError:
-                                school1 = ''
+            else:
+                while True:
+                    first = True
+                    self.next_page()
+                    for page in self.page_list:
+                        if page.get_text() == "...":
+                            if first:
+                                first = False
+                            elif page.get_text() == num_page:
+                                for college in self.college_links:
+                                    wait.until(EC.element_to_be_clickable((By.XPATH, xpath_soup(college))))
+                                    college_click = self.driver.find_element_by_xpath(xpath_soup(college))
+                                    college_click.click()
+                                    self.grabbing_class_links()
+                                    for course in self.class_links:
+                                        wait.until(EC.element_to_be_clickable((By.XPATH, xpath_soup(course))))
+                                        course_click = self.driver.find_element_by_xpath(xpath_soup(course))
+                                        actions = ActionChains(self.driver)
+                                        actions.move_to_element(course_click).perform()
+                                        course_click.click()
+                                        sleep(3)
+                                        self.grabbing_class_info()
+                                        try:
+                                            school1 = self.class_info[2][0].get_text()
+                                        except IndexError:
+                                            school1 = ''
 
-                            try:
-                                course1 = self.class_info[0][0].get_text()
-                            except IndexError:
-                                course1 = ''
+                                        try:
+                                            course1 = self.class_info[0][0].get_text()
+                                        except IndexError:
+                                            course1 = ''
 
-                            try:
-                                desc1 = self.class_info[1][0].get_text()
-                            except IndexError:
-                                desc1 = ''
+                                        try:
+                                            desc1 = self.class_info[1][0].get_text()
+                                        except IndexError:
+                                            desc1 = ''
 
-                            try:
-                                school2 = self.class_info[2][1].get_text()
-                            except IndexError:
-                                school1 = ''
+                                        try:
+                                            school2 = self.class_info[2][1].get_text()
+                                        except IndexError:
+                                            school1 = ''
 
-                            try:
-                                course2 = self.class_info[0][1].get_text()
-                            except IndexError:
-                                course2 = ''
+                                        try:
+                                            course2 = self.class_info[0][1].get_text()
+                                        except IndexError:
+                                            course2 = ''
 
-                            try:
-                                desc2 = self.class_info[1][1].get_text()
-                            except IndexError:
-                                desc2 = ''
-                            self.json_dump(school1, school2, course1, course2, desc1, desc2)
+                                        try:
+                                            desc2 = self.class_info[1][1].get_text()
+                                        except IndexError:
+                                            desc2 = ''
+                                        self.json_dump(school1, school2, course1, course2, desc1, desc2)
 
-                            wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/form/div[6]/div/div/div/div/div[1]/button")))
-                            close = self.driver.find_element_by_xpath("/html/body/div/form/div[6]/div/div/div/div/div[1]/button")
-                            close.click()
-                        self.driver.execute_script("window.history.go(-1)")
-                    page_click = self.driver.find_element_by_xpath(xpath_soup(page))
-                    page_click.click()
+                                        wait.until(EC.element_to_be_clickable(
+                                            (By.XPATH, "/html/body/div/form/div[6]/div/div/div/div/div[1]/button")))
+                                        close = self.driver.find_element_by_xpath(
+                                            "/html/body/div/form/div[6]/div/div/div/div/div[1]/button")
+                                        close.click()
+                                    self.driver.execute_script("window.history.go(-1)")
+                            else:
+                                page_click = self.driver.find_element_by_xpath(xpath_soup(page))
+                                page_click.click()
+                                sleep(0.1)
+                                break
 
     def next_page(self):
         soup = bs(self.driver.page_source, 'html5lib')
         next_page = soup.find_all(lambda tag: tag.name == 'a' and tag.has_attr('href') and 'doPostBack' in tag.get('href') and 'Page' in tag.get('href'))
         self.page_list = next_page
 
-    def grabbing_college_links(self):
+    def grabbing_college_links(self, letter):
         self.driver.get(
             'https://tes.collegesource.com/publicview/TES_publicview01.aspx?rid=dfbeb9e1-e048-49ca-b901-d8ba6666eb39&aid=39380d65-2ca9-4bd4-8a40-421d48832187')
-        soup = bs(self.driver.page_source, 'html5lib')
-        college_links = soup.find_all(
-            lambda tag: tag.name == 'a' and tag.has_attr('class') and tag['class'][0] == 'gdv_boundfield_uppercase')
-        self.college_links = college_links
+        if letter != 'ALL':
+            soup = bs(self.driver.page_source, 'html5lib')
+            letter_button = soup.find(lambda tag: tag.name == 'a' and tag.has_attr('id') and tag.get('id') == 'rptAlphabets_btnAlphaChar_0'
+                                      and tag.get_text() == letter)
+            letter_click = self.driver.find_element_by_xpath(xpath_soup(letter_button))
+            letter_click.click()
+            soup = bs(self.driver.page_source, 'html5lib')
+            college_links = soup.find_all(
+                lambda tag: tag.name == 'a' and tag.has_attr('class') and tag['class'][0] == 'gdv_boundfield_uppercase')
+            self.college_links = college_links
+
+        else:
+            soup = bs(self.driver.page_source, 'html5lib')
+            college_links = soup.find_all(
+                lambda tag: tag.name == 'a' and tag.has_attr('class') and tag['class'][0] == 'gdv_boundfield_uppercase')
+            self.college_links = college_links
 
     def grabbing_class_links(self):
         soup = bs(self.driver.page_source, 'html5lib')
